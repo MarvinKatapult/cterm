@@ -14,7 +14,7 @@ void clearScreen() {
 }
 
 void moveCursor(int x, int y) {
-    printf("\033[%d;%dH", x, y);
+    printf("\033[%d;%dH", y, x);
 }
 
 void putStr(const char * str) {
