@@ -15,14 +15,14 @@ void handle_signals(int sig) {
 
 int main() {
 
-    int count = 1;
+    int count = 5;
     signal(SIGINT, handle_signals);
     CT_init();
     while (!should_close) {
         CT_draw_rect(5, 5, 10, 10, CT_White, CT_Red);
         CT_put_str_at("Hello", 5, count++);
-        CT_sleep(1);
         CT_update_buffer();
+        CT_sleep(1);
     }
     CT_clean_up();
 

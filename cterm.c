@@ -20,6 +20,8 @@ typedef struct CT_cell {
 
 static CT_Cell_t * draw_buffer;
 static CT_Cell_t * current_cell;
+static CT_Color_t current_fg_color;
+static CT_Color_t current_bg_color;
 
 /*
  * ──────────────
@@ -86,7 +88,7 @@ void cMoveCursor(int x, int y) {
 
 void cPrintfAt(int x, int y, char c) {
     cMoveCursor(x, y);
-    printf("%lc", c);
+    printf("%c", c);
 }
 
 static void resizeBuffer() {
@@ -116,6 +118,7 @@ void CT_init() {
 
 void CT_clean_up() {
     CT_show_cursor(true);
+    free(draw_buffer);
 }
 
 void CT_clear_screen() {
@@ -136,12 +139,21 @@ bool CT_move_cursor(int x, int y) {
     return true;
 }
 
+void CT_set_color(CT_Color_t fg, CT_Color_t bg) {
+    CT_set_fg_color(fg);
+    CT_set_bg_color(bg);
+}
+
 void CT_set_fg_color(CT_Color_t color) {
-    current_cell->fg = color;
+    current_fg_color = color;
 }
 
 void CT_set_bg_color(CT_Color_t color) {
-    current_cell->bg = color;
+    current_bg_color = color;
+}
+
+void CT_reset_color(void) {
+    CT_set_color(CT_Default, CT_Default);
 }
 
 void CT_show_cursor(bool show) {
@@ -169,6 +181,8 @@ bool currentCellOutOfBounds() {
 void CT_put_str(const char * str) {
     while (*str) {
         current_cell->changed = true;
+        current_cell->fg      = current_fg_color;
+        current_cell->bg      = current_bg_color;
         (current_cell++)->c = *str++;
         if (currentCellOutOfBounds()) {
             assert(CT_move_cursor(0, 0));
@@ -217,7 +231,7 @@ void CT_get_term_size(int * w, int * h) {
     if (h) *h = win.ws_row;
 }
 
-void CT_fill_screen(CT_Color_t color) {
+void CT_fill_background(CT_Color_t color) {
     CT_move_cursor(0, 0);
     CT_set_bg_color(color);
     int w, h;
@@ -232,8 +246,8 @@ void CT_fill_screen(CT_Color_t color) {
 
 void CT_draw_rect(int x, int y, int width, int height, CT_Color_t fg, CT_Color_t bg) {
     if (x < 0 || y < 0 || width <= 1 || height <= 1) return;
-    CT_set_bg_color(bg);
-    CT_set_fg_color(fg);
+    CT_set_color(fg, bg);
+
     for (int i = 1; i < width; i++) {
         CT_put_str_at("-", x + i, y);
         CT_put_str_at("-", x + i, y + height);
@@ -242,10 +256,11 @@ void CT_draw_rect(int x, int y, int width, int height, CT_Color_t fg, CT_Color_t
         CT_put_str_at("|", x, y + i);
         CT_put_str_at("|", x + width, y + i);
     }
-    CT_put_str_at("@", x, y);
-    CT_put_str_at("@", x + width, y);
-    CT_put_str_at("@", x, y + height);
-    CT_put_str_at("@", x + width, y + height);
+    CT_put_str_at("#", x, y);
+    CT_put_str_at("#", x + width, y);
+    CT_put_str_at("#", x, y + height);
+    CT_put_str_at("#", x + width, y + height);
+    CT_reset_color();
 }
 
 void CT_fill_rect(int x, int y, int width, int height, CT_Color_t bg) {
@@ -271,11 +286,6 @@ void CT_update_buffer(void) {
     }
     fflush(stdout);
     cMoveCursor(0, 0);
-}
-
-void CT_reset_color(void) {
-    CT_set_fg_color(CT_Default);
-    CT_set_bg_color(CT_Default);
 }
 
 static struct termios orig_termios;
