@@ -24,9 +24,10 @@
 #ifndef __C_TERM__
 #define __C_TERM__
 
+#include <stddef.h>
 #include <stdbool.h>
 
-typedef enum CT_Color {
+typedef enum CT_Color_t {
     CT_Default = 0,
     CT_Black,
     CT_Red,
@@ -44,32 +45,42 @@ typedef enum CT_Color {
     CT_LMagenta,
     CT_LCyan,
     CT_LWhite
-} CT_Color;
+} CT_Color_t;
+
+/** Init **/
+void CT_init(void);
+void CT_clean_up(void);
 
 /** Utils **/
-void clearScreen(void);
-void moveCursor(int x, int y);
-void setPrintColor(CT_Color color);
-void setBgColor(CT_Color color);
-void resetCTColor(void);
-bool isCtrlChar(int ch);
+void CT_clear_screen(void);
+bool CT_move_cursor(int x, int y);
+void CT_set_fg_color(CT_Color_t color);
+void CT_set_bg_color(CT_Color_t color);
+void CT_show_cursor(bool show);
+void CT_reset_color(void);
+bool CT_is_ctrl_char(int ch);
+bool CT_is_out_of_bounds(int x, int y);
+void CT_sleep(size_t secs);
 
 /** Terminal Geometry **/
-int getTermWidth(void);
-int getTermHeight(void);
-void getTermSize(int * w, int * h);
+int CT_get_term_width(void);
+int CT_get_term_height(void);
+void CT_get_term_size(int * w, int * h);
 
 /** Printing **/
-void putStr(const char * str);
-void putStrExt(const char * str, CT_Color print_col, CT_Color bg_col);
-void putStrAt(const char * str, int x, int y);
-void putStrAtExt(const char * str, int x, int y, CT_Color print_col, CT_Color bg_col);
-void fillScreenBg(CT_Color color);
+void CT_put_str(const char * str);
+void CT_put_str_ext(const char * str, CT_Color_t print_col, CT_Color_t bg_col);
+bool CT_put_str_at(const char * str, int x, int y);
+bool CT_put_str_at_ext(const char * str, int x, int y, CT_Color_t print_col, CT_Color_t bg_col);
+void CT_fill_screen(CT_Color_t color);
+void CT_draw_rect(int x, int y, int width, int height, CT_Color_t print_col, CT_Color_t bg_col);
+void CT_fill_rect(int x, int y, int width, int height, CT_Color_t bg_col);
+void CT_update_buffer(void);
 
 /** Rawmode **/
 // From https://viewsourcecode.org/snaptoken/kilo/02.enteringRawMode.html
-void disableRawMode(void);
-void enableRawMode(void);
-unsigned char readTermInput(void);
+void CT_disable_raw_mode(void);
+void CT_enable_raw_mode(void);
+unsigned char CT_read_term_input(void);
 
 #endif // __C_TERM__
