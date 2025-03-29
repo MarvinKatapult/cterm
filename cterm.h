@@ -62,6 +62,10 @@ void CT_show_cursor(bool show);
 bool CT_is_ctrl_char(int ch);
 bool CT_is_out_of_bounds(int x, int y);
 void CT_sleep(size_t secs);
+// From https://viewsourcecode.org/snaptoken/kilo/02.enteringRawMode.html
+unsigned char CT_read_term_input(void);
+void CT_disable_raw_mode(void);
+void CT_enable_raw_mode(void);
 
 /** Terminal Geometry **/
 int CT_get_term_width(void);
@@ -77,11 +81,5 @@ void CT_fill_background(CT_Color_t color);
 void CT_draw_rect(int x, int y, int width, int height, CT_Color_t print_col, CT_Color_t bg_col);
 void CT_fill_rect(int x, int y, int width, int height, CT_Color_t bg_col);
 void CT_update_buffer(void);
-
-/** Rawmode **/
-// From https://viewsourcecode.org/snaptoken/kilo/02.enteringRawMode.html
-void CT_disable_raw_mode(void);
-void CT_enable_raw_mode(void);
-unsigned char CT_read_term_input(void);
 
 #endif // __C_TERM__

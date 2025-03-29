@@ -23,21 +23,6 @@ static CT_Cell_t * current_cell;
 static CT_Color_t current_fg_color;
 static CT_Color_t current_bg_color;
 
-/*
- * ──────────────
- * │            │
- * ├────────────┤
- * ┼┼┼┼┼┼┼┼┼┼┼┼┼┼
- * ┌────────────┐
- * └────────────┘
- * ╔════════════╗
- * ╚════════════╝
- * ║            ║
- * ╠════════════╣
- * ╩════════════╩
- * ╦════════════╦
- */
-
 void cSetFgColor(CT_Color_t color) {
     switch (color) {
         case CT_Default:  printf("\033[39m"); break;
@@ -97,6 +82,7 @@ static void resizeBuffer() {
     assert(w != 0 && h != 0);
     draw_buffer = realloc(draw_buffer, sizeof(CT_Cell_t) * w * h);
     assert(draw_buffer);
+    printf("Resizing Buffer\n");
 }
 
 static void handleSignals(int sig) {
@@ -125,10 +111,7 @@ void CT_clear_screen() {
     int w, h;
     CT_get_term_size(&w, &h);
     for (int i = 0; i < w * h; i++) {
-        draw_buffer[i].c = ' ';
-        draw_buffer[i].fg = CT_Default;
-        draw_buffer[i].bg = CT_Default;
-        draw_buffer[i].changed = true;
+        CT_put_str_at_ext(" ", i % w, i / w, CT_Default, CT_Default);
     }
 }
 
@@ -248,18 +231,18 @@ void CT_draw_rect(int x, int y, int width, int height, CT_Color_t fg, CT_Color_t
     if (x < 0 || y < 0 || width <= 1 || height <= 1) return;
     CT_set_color(fg, bg);
 
-    for (int i = 1; i < width; i++) {
+    for (int i = 1; i < width - 1; i++) {
         CT_put_str_at("-", x + i, y);
-        CT_put_str_at("-", x + i, y + height);
+        CT_put_str_at("-", x + i, y + height - 1);
     }
-    for (int i = 1; i < height; i++) {
+    for (int i = 1; i < height - 1; i++) {
         CT_put_str_at("|", x, y + i);
-        CT_put_str_at("|", x + width, y + i);
+        CT_put_str_at("|", x + width - 1, y + i);
     }
     CT_put_str_at("#", x, y);
-    CT_put_str_at("#", x + width, y);
-    CT_put_str_at("#", x, y + height);
-    CT_put_str_at("#", x + width, y + height);
+    CT_put_str_at("#", x + width - 1, y);
+    CT_put_str_at("#", x, y + height - 1);
+    CT_put_str_at("#", x + width - 1, y + height - 1);
     CT_reset_color();
 }
 
