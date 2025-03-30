@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <sys/ioctl.h>
+#include <fcntl.h>
 #include <termios.h>
 
 #include <ctype.h>
@@ -286,6 +287,7 @@ void CT_enable_raw_mode() {
     raw.c_oflag &= ~(OPOST);
     raw.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+    fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK);
 }
 
 bool CT_is_ctrl_char(int ch) {

@@ -1,40 +1,43 @@
 
 #include "cterm.h"
 
-#include <signal.h>
-#include <stdio.h>
+#include <unistd.h>
 
-#include <string.h>
-
-typedef struct {
+struct Ball_t {
     int x, y;
-    int w, h;
-    const char * text;
-} Rect_t;
-
-static bool should_close;
-
-void handle_signals(int sig) {
-    switch (sig) {
-        case SIGINT:
-            should_close = true;
-            break;
-    }
-}
+    int x_vel, y_vel;
+} ball;
 
 int main() {
-    signal(SIGINT, handle_signals);
     CT_init();
+    CT_enable_raw_mode();
+    int player_pos = 2;
+    ball = (struct Ball_t){2, 2, 1, 1};
 
-    Rect_t rect = {10, 10, 30, 15, "This is a Button :)"};
-    while (!should_close) {
-        CT_fill_rect(rect.x, rect.y, rect.w, rect.h, CT_Yellow);
-        CT_put_str_at_ext(rect.text, rect.x + rect.w / 2 - strlen(rect.text) / 2, rect.y + rect.h / 2, CT_Black, CT_Yellow);
+    while (1) {
+        char c = CT_read_term_input();
+        if (c == 'q') break;
+
+        CT_clear_screen();
+        switch (c) {
+            case 'a':
+                player_pos--;
+                break;
+            case 'd':
+                player_pos++;
+                break;
+        }
+
+        ball.x += ball.x_vel;
+        ball.y += ball.y_vel;
+
+        CT_fill_rect(player_pos, CT_get_term_height() - 5, 10, 3, CT_White);
+        CT_fill_rect(ball.x, ball.y, 2, 2, CT_White);
         CT_update_buffer();
-        CT_sleep(1);
     }
     CT_clear_screen();
     CT_update_buffer();
+    CT_disable_raw_mode();
     CT_clean_up();
 
     return 0;
